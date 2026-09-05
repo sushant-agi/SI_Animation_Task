@@ -49,6 +49,60 @@ class ball{
     }
 }
 
+class AuroraWave {
+  constructor(baseY, amplitude, frequency, speed, colorStops) {
+    this.baseY = baseY;           
+    this.amplitude = amplitude;   
+    this.frequency = frequency;   
+    this.speed = speed;          
+    this.colorStops = colorStops; 
+    this.timeOffset = Math.random() * 100;
+  }
+
+  update() {
+    this.timeOffset += this.speed;
+  }
+
+  draw() {
+    ctx.save();
+    
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = 0.25; 
+
+    ctx.beginPath();
+    ctx.moveTo(0, height); 
+
+    
+    for (let x = 0; x <= width; x += 10) {
+      
+      const y = this.baseY + 
+                Math.sin(x * this.frequency + this.timeOffset) * this.amplitude +
+                Math.cos(x * 0.005 - this.timeOffset) * (this.amplitude * 0.3);
+      ctx.lineTo(x, y);
+    }
+
+    ctx.lineTo(width, height); 
+    ctx.closePath();
+
+    const gradient = ctx.createLinearGradient(0, this.baseY - this.amplitude * 1.5, 0, height);
+    gradient.addColorStop(0, this.colorStops[0]); 
+    gradient.addColorStop(0.4, this.colorStops[1]); 
+    gradient.addColorStop(0.8, this.colorStops[2]); 
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');   
+
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+
+const auroraLayers = [
+  new AuroraWave(height * 0.25, 90, 0.002, 0.003, ['rgba(0, 255, 150, 1)', 'rgba(0, 190, 255, 0.8)', 'rgba(150, 0, 255, 0)']),
+  new AuroraWave(height * 0.35, 70, 0.003, 0.005, ['rgba(0, 220, 255, 1)', 'rgba(120, 0, 255, 0.7)', 'rgba(50, 0, 100, 0)']),
+  new AuroraWave(height * 0.20, 110, 0.0015, 0.002, ['rgba(180, 0, 255, 0.9)', 'rgba(0, 255, 200, 0.6)', 'rgba(0, 0, 0, 0)'])
+];
+
 const Ball = new ball();
 
 const ballsArray = [];
@@ -64,6 +118,11 @@ function animate() {
   ballsArray.forEach(ball => {
     ball.draw();
     ball.update();
+  });
+
+  auroraLayers.forEach(layer =>{
+    layer.update();
+    layer.draw();
   });
 
   Ball.draw();        
