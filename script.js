@@ -42,7 +42,7 @@ class ball{
         if (this.x+this.radius>=width || this.x-this.radius<=0){
             this.speedX=-this.speedX;
         }
-        if (this.y+this.radius>=height || this.y-this.radius<0){
+        if (this.y+this.radius>=height || this.y-this.radius<=0){
             this.speedY=-this.speedY;
         }
 
@@ -51,8 +51,20 @@ class ball{
 
 const Ball = new ball();
 
+const ballsArray = [];
+const numberOfBalls = 50; 
+
+for (let i = 0; i < numberOfBalls; i++) {
+  ballsArray.push(new ball());
+}
+
 function animate() {
   ctx.clearRect(0, 0, width, height);
+
+  ballsArray.forEach(ball => {
+    ball.draw();
+    ball.update();
+  });
 
   Ball.draw();        
   Ball.update();  
