@@ -8,42 +8,101 @@ function randomRange(max, min){
     return Math.random()*(max-min)+min;
 }
 
-class ball{
+let mouseX=-1000;
+let mouseY=-1000;
+
+canvas.addEventListener("mousemove", (event)=>{
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+});
+
+class Star {
+
+  constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+
+      this.radius = Math.random() * 1 + 0.3;
+
+      this.baseOpacity =
+          Math.random() * 0.6 + 0.3;
+
+      this.opacity = this.baseOpacity;
+
+      this.twinkle = Math.random() * Math.PI * 2;
+  }
+
+  update() {
+
+      this.twinkle += 0.02;
+
+      this.opacity =
+          this.baseOpacity +
+          Math.sin(this.twinkle) * 0.1;
+  }
+
+  draw() {
+
+      ctx.beginPath();
+
+      ctx.arc(
+          this.x,
+          this.y,
+          this.radius,
+          0,
+          Math.PI * 2
+      );
+
+      ctx.fillStyle =
+          `rgba(255,255,255,${this.opacity})`;
+
+      ctx.fill();
+  }
+}
+
+class snowflakes{
     constructor(){
-        this.radius=randomRange(20, 10);
+      this.reset(true);
+    }
+    reset(initial=false){
+      this.radius=randomRange(3, 1);
 
-        this.x=randomRange(width-this.radius, this.radius);
-        this.y=randomRange(width-this.radius, this.radius);
-        this.speedX=randomRange(-1, 1);
-        this.speedY=randomRange(-1, 1);
+      this.x=randomRange(width-this.radius, this.radius);
+      if (initial){
+        this.y=randomRange(height-this.radius, this.radius);}
+      else{
+        this.y=-Math.random()*50;
+      }
+      this.speedX=randomRange(0.4, -0.4);
+      this.speedY=randomRange(3,1);
 
-        if (this.speedX==0 || this.speedY==0){
-            this.speedX=this.speedY=1;
-        }
-        this.color=`hsl(${Math.random()*360}, 50%, 50%)`;
+      if (this.speedX==0 || this.speedY==0){
+          this.speedX=this.speedY=1;
+      }
+      this.opacity= randomRange(0.9, 0.2);
     }
 
     draw() {
 
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2* Math.PI);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
         ctx.fill();
-
-        ctx.lineWidth = 5; 
-        ctx.strokeStyle = '#41e0f5';
-        ctx.stroke();
         ctx.closePath();
     }
 
     update(){
         this.x+=this.speedX;
         this.y+=this.speedY;
-        if (this.x+this.radius>=width || this.x-this.radius<=0){
-            this.speedX=-this.speedX;
+        if (this.y-this.radius > height){
+          this.reset();
         }
-        if (this.y+this.radius>=height || this.y-this.radius<=0){
-            this.speedY=-this.speedY;
+
+        if (this.x<-10){
+          this.x=width+10;
+        }
+        if (this.x>width+10){
+          this.x=-10;
         }
 
     }
@@ -67,7 +126,7 @@ class AuroraWave {
     ctx.save();
     
     ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.25; 
+    ctx.globalAlpha = 0.95; 
 
     ctx.beginPath();
     ctx.moveTo(0, height); 
@@ -76,8 +135,9 @@ class AuroraWave {
     for (let x = 0; x <= width; x += 10) {
       
       const y = this.baseY + 
-                Math.sin(x * this.frequency + this.timeOffset) * this.amplitude +
+                Math.sin(x * this.frequency + this.timeOffset) * this.amplitude+
                 Math.cos(x * 0.005 - this.timeOffset) * (this.amplitude * 0.3);
+                
       ctx.lineTo(x, y);
     }
 
@@ -98,26 +158,33 @@ class AuroraWave {
 
 
 const auroraLayers = [
-  new AuroraWave(height * 0.25, 90, 0.002, 0.003, ['rgba(0, 255, 150, 1)', 'rgba(0, 190, 255, 0.8)', 'rgba(150, 0, 255, 0)']),
-  new AuroraWave(height * 0.35, 70, 0.003, 0.005, ['rgba(0, 220, 255, 1)', 'rgba(120, 0, 255, 0.7)', 'rgba(50, 0, 100, 0)']),
-  new AuroraWave(height * 0.20, 110, 0.0015, 0.002, ['rgba(180, 0, 255, 0.9)', 'rgba(0, 255, 200, 0.6)', 'rgba(0, 0, 0, 0)'])
+  new AuroraWave(height * 0.25, 70, 0.003, 0.008, ['rgba(0, 255, 150, 1)', 'rgba(0, 190, 255, 0.8)', 'rgba(150, 0, 255, 0)']),
+  new AuroraWave(height * 0.35, 30, 0.003, 0.005, ['rgba(0, 220, 255, 1)', 'rgba(255, 255, 255, 0.9)', 'rgba(120, 0, 255, 0.7)', 'rgba(50, 0, 100, 0)']),
+  new AuroraWave(height * 0.55, 100, 0.0015, 0.002, ['rgba(180, 0, 255, 0.9)', 'rgba(0, 255, 200, 0.6)', 'rgba(0, 0, 0, 0)'])
 ];
 
-const Ball = new ball();
+const snow = new snowflakes();
 
-const ballsArray = [];
-const numberOfBalls = 50; 
+const snowArray = [];
 
-for (let i = 0; i < numberOfBalls; i++) {
-  ballsArray.push(new ball());
+for (let i = 0; i < 200; i++) {
+  snowArray.push(new snowflakes());
+}
+
+const star = new Star();
+
+const starsArray = [];
+
+for (let i = 0; i < 1000; i++) {
+  starsArray.push(new Star());
 }
 
 function animate() {
   ctx.clearRect(0, 0, width, height);
 
-  ballsArray.forEach(ball => {
-    ball.draw();
-    ball.update();
+  snowArray.forEach(snowArray => {
+    snowArray.draw();
+    snowArray.update();
   });
 
   auroraLayers.forEach(layer =>{
@@ -125,10 +192,12 @@ function animate() {
     layer.draw();
   });
 
-  Ball.draw();        
-  Ball.update();  
+  starsArray.forEach(starsArray => {
+    starsArray.draw();
+    starsArray.update();
+  });
 
-  
+
   requestAnimationFrame(animate);
 }
 
