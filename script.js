@@ -16,6 +16,11 @@ canvas.addEventListener("mousemove", (event)=>{
   mouseY = event.clientY;
 });
 
+canvas.addEventListener("mouseleave", ()=>{
+  mouseX = -1000;
+  mouseY = -1000;
+});
+
 class Star {
 
   constructor() {
@@ -34,11 +39,20 @@ class Star {
 
   update() {
 
-      this.twinkle += 0.02;
-
-      this.opacity =
-          this.baseOpacity +
-          Math.sin(this.twinkle) * 0.1;
+      this.twinkle+= 0.02;
+      let distance= Math.hypot(
+        mouseX-this.x, mouseY-this.y);
+      if (distance<70){
+        this.opacity=
+        0.5 +
+        Math.sin(this.twinkle*9) * 0.4;
+      }
+      else{
+        this.opacity=
+        this.baseOpacity +
+        Math.sin(this.twinkle) * 0.1;
+      }
+      
   }
 
   draw() {
@@ -152,6 +166,26 @@ class AuroraWave {
 
     ctx.fillStyle = gradient;
     ctx.fill();
+
+    const waveY = this.baseY + 
+                Math.sin(mouseX * this.frequency + this.timeOffset) * this.amplitude+
+                Math.cos(mouseX * 0.005 - this.timeOffset) * (this.amplitude * 0.3);
+    const distance= Math.abs(mouseY-waveY);
+
+    const glow= Math.max(0, 1-distance/100);
+
+    if (glow>0){
+      const glowGradient= ctx.createRadialGradient(mouseX, waveY, 0, mouseX, waveY, 150);
+      glowGradient.addColorStop(0, this.colorStops[0]); 
+      glowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+      ctx.fillStyle = glowGradient;
+      ctx.globalAlpha=glow*0.8;
+      ctx.beginPath();
+      ctx.arc(mouseX, waveY, 150, 0, 2* Math.PI);
+      ctx.fill();
+    }
+    
     ctx.restore();
   }
 }
@@ -175,16 +209,16 @@ const star = new Star();
 
 const starsArray = [];
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 3000; i++) {
   starsArray.push(new Star());
 }
 
 function animate() {
   ctx.clearRect(0, 0, width, height);
 
-  snowArray.forEach(snowArray => {
-    snowArray.draw();
-    snowArray.update();
+  starsArray.forEach(starsArray => {
+    starsArray.draw();
+    starsArray.update();
   });
 
   auroraLayers.forEach(layer =>{
@@ -192,11 +226,10 @@ function animate() {
     layer.draw();
   });
 
-  starsArray.forEach(starsArray => {
-    starsArray.draw();
-    starsArray.update();
+  snowArray.forEach(snowArray => {
+    snowArray.draw();
+    snowArray.update();
   });
-
 
   requestAnimationFrame(animate);
 }
